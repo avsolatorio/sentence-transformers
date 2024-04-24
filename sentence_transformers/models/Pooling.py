@@ -42,7 +42,8 @@ class Pooling(nn.Module):
         pooling_mode_mean_sqrt_len_tokens: bool = False,
         pooling_mode_weightedmean_tokens: bool = False,
         pooling_mode_lasttoken: bool = False,
-        include_prompt=True,
+        include_prompt: bool = True,
+        output_key: str = "sentence_embedding",
     ) -> None:
         super(Pooling, self).__init__()
 
@@ -55,6 +56,7 @@ class Pooling(nn.Module):
             "pooling_mode_weightedmean_tokens",
             "pooling_mode_lasttoken",
             "include_prompt",
+            "output_key",
         ]
 
         if pooling_mode is not None:  # Set pooling mode by string
@@ -81,6 +83,7 @@ class Pooling(nn.Module):
         self.pooling_mode_lasttoken = pooling_mode_lasttoken
 
         self.include_prompt = include_prompt
+        self.output_key = output_key
 
         pooling_mode_multiplier = sum(
             [
@@ -209,7 +212,7 @@ class Pooling(nn.Module):
             output_vectors.append(embedding)
 
         output_vector = torch.cat(output_vectors, 1)
-        features.update({"sentence_embedding": output_vector})
+        features.update({self.output_key: output_vector})
         return features
 
     def get_sentence_embedding_dimension(self):
