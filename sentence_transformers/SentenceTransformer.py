@@ -270,7 +270,7 @@ class SentenceTransformer(nn.Sequential):
         prompt: Optional[str] = None,
         batch_size: int = 32,
         show_progress_bar: bool = None,
-        output_value: Optional[Literal["sentence_embedding", "token_embeddings"]] = "sentence_embedding",
+        output_value: Optional[Literal["sentence_embedding", "token_embeddings", "query_embedding"]] = "sentence_embedding",
         precision: Literal["float32", "int8", "uint8", "binary", "ubinary"] = "float32",
         convert_to_numpy: bool = True,
         convert_to_tensor: bool = False,
@@ -324,7 +324,7 @@ class SentenceTransformer(nn.Sequential):
         if convert_to_tensor:
             convert_to_numpy = False
 
-        if output_value != "sentence_embedding":
+        if output_value not in ("sentence_embedding", "query_embedding"):
             convert_to_tensor = False
             convert_to_numpy = False
 
@@ -382,6 +382,10 @@ class SentenceTransformer(nn.Sequential):
                 out_features["sentence_embedding"] = truncate_embeddings(
                     out_features["sentence_embedding"], self.truncate_dim
                 )
+                if "query_embedding" in out_features:
+                    out_features["query_embedding"] = truncate_embeddings(
+                        out_features["query_embedding"], self.truncate_dim
+                    )
 
                 if output_value == "token_embeddings":
                     embeddings = []

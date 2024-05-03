@@ -9,7 +9,7 @@ class EmbeddingMode(nn.Module):
     """
 
     def __init__(self, mode: str = "doc"):
-        self._mode = mode
+        self.mode = mode
         super(EmbeddingMode, self).__init__()
 
     @property
