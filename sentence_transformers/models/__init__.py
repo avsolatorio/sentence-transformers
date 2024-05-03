@@ -4,6 +4,7 @@ from .BoW import BoW
 from .CNN import CNN
 from .Dense import Dense
 from .Dropout import Dropout
+from .EmbeddingMode import EmbeddingMode
 from .LayerNorm import LayerNorm
 from .LSTM import LSTM
 from .Normalize import Normalize
@@ -20,6 +21,7 @@ __all__ = [
     "CNN",
     "Dense",
     "Dropout",
+    "EmbeddingMode",
     "LayerNorm",
     "LSTM",
     "Normalize",
