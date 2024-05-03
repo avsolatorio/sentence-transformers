@@ -13,7 +13,10 @@ class Normalize(nn.Module):
         super(Normalize, self).__init__()
 
     def forward(self, features: Dict[str, Tensor]):
-        features.update({"sentence_embedding": F.normalize(features["sentence_embedding"], p=2, dim=1)})
+        for key in ("sentence_embedding", "query_embedding"):
+            if key in features:
+                features.update({key: F.normalize(features[key], p=2, dim=1)})
+
         return features
 
     def save(self, output_path):
