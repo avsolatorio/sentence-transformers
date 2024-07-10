@@ -67,12 +67,13 @@ class ViT(nn.Module):
         embedding = self.vit(features["sentence_embedding"].view(-1, self.num_channels, self.image_size[0], self.image_size[1]))
 
         features.update({"vit_token_embeddings": embedding.last_hidden_state})
+        features.update({"vit_attention_mask": torch.ones(embedding.last_hidden_state.shape[:2], device=embedding.last_hidden_state.device, dtype=torch.long)})
 
         if self.add_pooling_layer:
-            features.update({"sentence_embedding": embedding.pooler_output})
+            features.update({"vit_sentence_embedding": embedding.pooler_output})
 
         else:
-            features.update({"sentence_embedding": embedding.last_hidden_state[:, 0]})
+            features.update({"vit_sentence_embedding": embedding.last_hidden_state[:, 0]})
 
         return features
 
