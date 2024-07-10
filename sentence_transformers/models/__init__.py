@@ -13,6 +13,7 @@ from .WeightedLayerPooling import WeightedLayerPooling
 from .WordEmbeddings import WordEmbeddings
 from .WordWeights import WordWeights
 from .CLIPModel import CLIPModel
+from .ViT import ViT
 
 __all__ = [
     "Transformer",
@@ -30,4 +31,5 @@ __all__ = [
     "WordEmbeddings",
     "WordWeights",
     "CLIPModel",
+    "ViT",
 ]
