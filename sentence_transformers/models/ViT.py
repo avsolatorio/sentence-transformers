@@ -66,6 +66,8 @@ class ViT(nn.Module):
     def forward(self, features):
         embedding = self.vit(features["sentence_embedding"].view(-1, self.num_channels, self.image_size[0], self.image_size[1]))
 
+        features.update({"vit_token_embeddings": embedding.last_hidden_state})
+
         if self.add_pooling_layer:
             features.update({"sentence_embedding": embedding.pooler_output})
 
