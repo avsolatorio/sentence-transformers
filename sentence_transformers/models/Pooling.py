@@ -44,6 +44,7 @@ class Pooling(nn.Module):
         pooling_mode_lasttoken: bool = False,
         include_prompt: bool = True,
         output_key: str = "sentence_embedding",
+        input_prefix: str = "",
     ) -> None:
         super(Pooling, self).__init__()
 
@@ -57,6 +58,7 @@ class Pooling(nn.Module):
             "pooling_mode_lasttoken",
             "include_prompt",
             "output_key",
+            "input_prefix",
         ]
 
         if pooling_mode is not None:  # Set pooling mode by string
@@ -84,6 +86,11 @@ class Pooling(nn.Module):
 
         self.include_prompt = include_prompt
         self.output_key = output_key
+
+        if input_prefix:
+            assert input_prefix.endswith("_"), "input_prefix should end with _"
+
+        self.input_prefix = input_prefix
 
         pooling_mode_multiplier = sum(
             [
@@ -121,10 +128,12 @@ class Pooling(nn.Module):
         return "+".join(modes)
 
     def forward(self, features: Dict[str, Tensor]):
-        token_embeddings = features["token_embeddings"]
-        attention_mask = features["attention_mask"]
-        if not self.include_prompt and "prompt_length" in features:
-            attention_mask[:, : features["prompt_length"]] = 0
+        token_embeddings = features[f"{self.input_prefix}token_embeddings"]
+        attention_mask = features[f"{self.input_prefix}attention_mask"]
+
+        if self.input_prefix == "":
+            if not self.include_prompt and "prompt_length" in features:
+                attention_mask[:, : features["prompt_length"]] = 0
 
         ## Pooling strategy
         output_vectors = []
