@@ -1,7 +1,7 @@
 from transformers import ViTConfig, ViTModel
 import torch
 from torch import nn
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Optional
 import os
 import json
 
@@ -20,9 +20,14 @@ class ViT(nn.Module):
         hidden_size: int = 768,
         add_pooling_layer: bool = False,
         num_channels: int = 1,
+        source_embedding: Optional[list[str]] = None,
     ):
         nn.Module.__init__(self)
-        self.config_keys = ["in_word_embedding_dimension", "image_height", "patch_width", "intermediate_size", "num_hidden_layers", "num_attention_heads", "hidden_size", "add_pooling_layer", "num_channels"]
+
+        if source_embedding is None:
+            source_embedding = ["sentence_embedding"]
+
+        self.config_keys = ["in_word_embedding_dimension", "image_height", "patch_width", "intermediate_size", "num_hidden_layers", "num_attention_heads", "hidden_size", "add_pooling_layer", "num_channels", "source_embedding"]
 
         self.in_word_embedding_dimension = in_word_embedding_dimension
         self.image_height = image_height
@@ -33,6 +38,8 @@ class ViT(nn.Module):
         self.hidden_size = hidden_size
         self.add_pooling_layer = add_pooling_layer
         self.num_channels = num_channels
+
+        self.source_embedding = source_embedding
 
         self.config = self.get_vit_config()
         self.vit = ViTModel(self.config, add_pooling_layer=add_pooling_layer)
@@ -64,16 +71,17 @@ class ViT(nn.Module):
         return self.vit_config
 
     def forward(self, features):
-        embedding = self.vit(features["sentence_embedding"].view(-1, self.num_channels, self.image_size[0], self.image_size[1]))
+        for embedding_key in self.source_embedding:
+            embedding = self.vit(features[embedding_key].view(-1, self.num_channels, self.image_size[0], self.image_size[1]))
 
-        features.update({"vit_token_embeddings": embedding.last_hidden_state})
-        features.update({"vit_attention_mask": torch.ones(embedding.last_hidden_state.shape[:2], device=embedding.last_hidden_state.device, dtype=torch.long)})
+            features.update({f"vit_{embedding_key}_token_embeddings": embedding.last_hidden_state})
+            features.update({f"vit_{embedding_key}_attention_mask": torch.ones(embedding.last_hidden_state.shape[:2], device=embedding.last_hidden_state.device, dtype=torch.long)})
 
-        if self.add_pooling_layer:
-            features.update({"vit_sentence_embedding": embedding.pooler_output})
+            if self.add_pooling_layer:
+                features.update({f"vit_{embedding_key}": embedding.pooler_output})
 
-        else:
-            features.update({"vit_sentence_embedding": embedding.last_hidden_state[:, 0]})
+            else:
+                features.update({f"vit_{embedding_key}": embedding.last_hidden_state[:, 0]})
 
         return features
 
