@@ -74,14 +74,19 @@ class ViT(nn.Module):
         for embedding_key in self.source_embedding:
             embedding = self.vit(features[embedding_key].view(-1, self.num_channels, self.image_size[0], self.image_size[1]))
 
-            features.update({f"vit_{embedding_key}_token_embeddings": embedding.last_hidden_state})
-            features.update({f"vit_{embedding_key}_attention_mask": torch.ones(embedding.last_hidden_state.shape[:2], device=embedding.last_hidden_state.device, dtype=torch.long)})
-
             if self.add_pooling_layer:
                 features.update({f"vit_{embedding_key}": embedding.pooler_output})
 
             else:
                 features.update({f"vit_{embedding_key}": embedding.last_hidden_state[:, 0]})
+
+            if embedding_key != "sentence_embedding":
+                embedding_key = f"{embedding_key}_"
+            else:
+                embedding_key = ""
+
+            features.update({f"vit_{embedding_key}token_embeddings": embedding.last_hidden_state})
+            features.update({f"vit_{embedding_key}attention_mask": torch.ones(embedding.last_hidden_state.shape[:2], device=embedding.last_hidden_state.device, dtype=torch.long)})
 
         return features
 
