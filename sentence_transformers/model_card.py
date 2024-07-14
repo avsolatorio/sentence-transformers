@@ -648,21 +648,22 @@ class SentenceTransformerModelCardData(CardData):
         ]
         dataset_info["stats_table"] = indent(make_markdown_table(stats_lines).replace("-:|", "--|"), "  ")
 
-        dataset_info["examples"] = dataset[:3]
-        num_samples = len(dataset_info["examples"][list(dataset_info["examples"])[0]])
-        examples_lines = []
-        for sample_idx in range(num_samples):
-            columns = {}
-            for column in dataset.column_names:
-                value = dataset_info["examples"][column][sample_idx]
-                # If the value is a long list, truncate it
-                if isinstance(value, list) and len(value) > 5:
-                    value = str(value[:5])[:-1] + ", ...]"
-                # Avoid newlines in the table
-                value = str(value).replace("\n", "<br>")
-                columns[column] = f"<code>{value}</code>"
-            examples_lines.append(columns)
-        dataset_info["examples_table"] = indent(make_markdown_table(examples_lines).replace("-:|", "--|"), "  ")
+        # TODO: Revert this when larger README is supported.
+        # dataset_info["examples"] = dataset[:3]
+        # num_samples = len(dataset_info["examples"][list(dataset_info["examples"])[0]])
+        # examples_lines = []
+        # for sample_idx in range(num_samples):
+        #     columns = {}
+        #     for column in dataset.column_names:
+        #         value = dataset_info["examples"][column][sample_idx]
+        #         # If the value is a long list, truncate it
+        #         if isinstance(value, list) and len(value) > 5:
+        #             value = str(value[:5])[:-1] + ", ...]"
+        #         # Avoid newlines in the table
+        #         value = str(value).replace("\n", "<br>")
+        #         columns[column] = f"<code>{value}</code>"
+        #     examples_lines.append(columns)
+        # dataset_info["examples_table"] = indent(make_markdown_table(examples_lines).replace("-:|", "--|"), "  ")
 
         dataset_info["loss"] = {
             "fullname": fullname(loss),
