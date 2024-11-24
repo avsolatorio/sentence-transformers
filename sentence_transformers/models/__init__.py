@@ -10,6 +10,7 @@ from .LayerNorm import LayerNorm
 from .LSTM import LSTM
 from .Normalize import Normalize
 from .Pooling import Pooling
+from .RandomProjection import RandomProjection
 from .StaticEmbedding import StaticEmbedding
 from .Transformer import Transformer
 from .WeightedLayerPooling import WeightedLayerPooling
@@ -28,6 +29,7 @@ __all__ = [
     "LSTM",
     "Normalize",
     "Pooling",
+    "RandomProjection",
     "WeightedLayerPooling",
     "WordEmbeddings",
     "WordWeights",
