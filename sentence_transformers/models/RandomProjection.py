@@ -39,32 +39,32 @@ class RandomProjection(nn.Module):
 
         torch.manual_seed(self.seed)
         # Yes, the order of the dimensions is correct. The in_features is the number of columns in the matrix, the out_features the number of rows. This is to prevent transposing the matrix in the forward pass.
-        self.projection = torch.randn(self.out_features, self.in_features)
+        self.projection = F.normalize(
+            torch.randn(self.out_features, self.in_features), p=2, dim=-1
+        )
         # Reset the seed
         torch.seed()
 
     def forward(self, features: dict[str, Tensor]):
-        # Compute the cosine similarity between the token embeddings and the projection matrix, then, take the mean
-        # over the token embeddings.
+        # We use tensordot to compute the cosine similarity between the token embeddings and the projection matrix.
+        # This is faster than the cosine similarity computation in the forward method.
+        # We then take the mean over the num_tokens dimension, resulting in a tensor of shape [bsz, out_features]
 
-        # features['token_embeddings'] has shape [bsz, num_tokens, embedding_dim]
-        # self.projection has shape [out_features, in_features(=embedding_dim)]
-        # We add two dimensions to the projection matrix to make it [1, 1, out_features, in_features]
-        # Then, we add one dimension to the token embeddings to make it [bsz, num_tokens, 1, embedding_dim]
-        # Then, we compute the cosine similarity between the two tensors, which results in a tensor of shape [bsz, num_tokens, out_features]
+        # We normalize the token embeddings and the projection matrix to have a norm of 1. This is necessary to compute the cosine similarity.
+        # Since the token embeddings has shape [bsz, num_tokens, embedding_dim], we normalize it along the last dimension. The projection is already normalized.
+        # We then compute the tensordot between the normalized token embeddings and the projection matrix along the last dimension of the token embeddings (dim=2) and the last dimension of the projection matrix (dim=1).
+        # This results in a tensor of shape [bsz, num_tokens, out_features]
         # We take the mean over the num_tokens dimension, resulting in a tensor of shape [bsz, out_features]
 
         features.update(
             {
-                "sentence_embedding": F.cosine_similarity(
-                    features["token_embeddings"].unsqueeze(-2),
-                    self.projection.unsqueeze(0).unsqueeze(0),
-                    dim=-1,
+                "sentence_embedding": torch.tensordot(
+                    F.normalize(features["token_embeddings"], p=2, dim=-1),
+                    self.projection,
+                    dims=([2], [1]),
                 ).mean(dim=1)
             }
         )
-
-        return features
 
     def get_sentence_embedding_dimension(self) -> int:
         return self.out_features
