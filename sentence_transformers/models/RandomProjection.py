@@ -66,6 +66,8 @@ class RandomProjection(nn.Module):
             }
         )
 
+        return features
+
     def get_sentence_embedding_dimension(self) -> int:
         return self.out_features
 
