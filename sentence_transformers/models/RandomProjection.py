@@ -85,6 +85,7 @@ class RandomProjection(nn.Module):
             "in_features": self.in_features,
             "out_features": self.out_features,
             "seed": self.seed,
+            "requires_grad": self.requires_grad,
         }
 
     def save(self, output_path, safe_serialization: bool = True) -> None:
