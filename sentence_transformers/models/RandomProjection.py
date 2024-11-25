@@ -31,16 +31,22 @@ class RandomProjection(nn.Module):
         in_features: int,
         out_features: int,
         seed: int = 42,
+        requires_grad: bool = False,
     ):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.seed = seed
+        self.requires_grad = requires_grad
 
         torch.manual_seed(self.seed)
         # Yes, the order of the dimensions is correct. The in_features is the number of columns in the matrix, the out_features the number of rows. This is to prevent transposing the matrix in the forward pass.
         self.projection = F.normalize(
-            torch.randn(self.out_features, self.in_features), p=2, dim=-1
+            torch.randn(
+                self.out_features, self.in_features, requires_grad=requires_grad
+            ),
+            p=2,
+            dim=-1,
         )
         # Reset the seed
         torch.seed()
@@ -55,6 +61,9 @@ class RandomProjection(nn.Module):
         # We then compute the tensordot between the normalized token embeddings and the projection matrix along the last dimension of the token embeddings (dim=2) and the last dimension of the projection matrix (dim=1).
         # This results in a tensor of shape [bsz, num_tokens, out_features]
         # We take the mean over the num_tokens dimension, resulting in a tensor of shape [bsz, out_features]
+
+        # Just renormalize the projection matrix to ensure that it has a norm of 1. This is important for the cosine similarity computation.
+        self.projection = F.normalize(self.projection, p=2, dim=-1)
 
         features.update(
             {
