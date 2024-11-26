@@ -41,12 +41,15 @@ class RandomProjection(nn.Module):
 
         torch.manual_seed(self.seed)
         # Yes, the order of the dimensions is correct. The in_features is the number of columns in the matrix, the out_features the number of rows. This is to prevent transposing the matrix in the forward pass.
-        self.projection = F.normalize(
-            torch.randn(
-                self.out_features, self.in_features, requires_grad=requires_grad
-            ),
-            p=2,
-            dim=-1,
+
+        self.projection = torch.nn.Parameter(
+            data=F.normalize(
+                torch.randn(
+                    self.out_features, self.in_features, requires_grad=requires_grad
+                ),
+                p=2,
+                dim=-1,
+            )
         )
         # Reset the seed
         torch.seed()
