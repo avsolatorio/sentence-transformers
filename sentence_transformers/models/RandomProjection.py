@@ -65,14 +65,11 @@ class RandomProjection(nn.Module):
         # This results in a tensor of shape [bsz, num_tokens, out_features]
         # We take the mean over the num_tokens dimension, resulting in a tensor of shape [bsz, out_features]
 
-        # Just renormalize the projection matrix to ensure that it has a norm of 1. This is important for the cosine similarity computation.
-        self.projection = F.normalize(self.projection, p=2, dim=-1)
-
         features.update(
             {
                 "sentence_embedding": torch.tensordot(
                     F.normalize(features["token_embeddings"], p=2, dim=-1),
-                    self.projection,
+                    F.normalize(self.projection, p=2, dim=-1),
                     dims=([2], [1]),
                 ).mean(dim=1)
             }
